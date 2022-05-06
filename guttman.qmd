@@ -1,0 +1,138 @@
+Nach meinem Verständnis sollte die Anzahl möglicher 2x2 Submatrizen
+
+n * (n-1) * (m über 2) sein und nicht n^2 * (m über 2).
+
+```{r}
+zys <- matrix(
+  c(0, 0, 1, 0,
+  0, 0, 0, 1,
+  1, 0, 1, 0,
+  0, 0, 1, 1,
+  1, 0, 2, 0,
+  1, 0, 2, 1,
+  1, 1, 2, 0,
+  1, 1, 2, 0,
+  1, 1, 3, 0,
+  1, 1, 3, 0,
+  1, 1, 2, 1,
+  1, 1, 2, 1,
+  1, 1, 2, 1,
+  1, 2, 3, 0,
+  1, 2, 3, 0,
+  1, 1, 3, 1,
+  1, 1, 3, 1,
+  2, 2, 3, 0,
+  2, 2, 3, 1,
+  2, 2, 4, 1),
+  ncol = 4,
+  byrow=TRUE
+)
+zys2 <- cbind(zys, rowSums(zys))
+i <- isoreg(zys2[,5], zys2[,4])
+```
+
+Erstelle Submatrizen:
+
+Unklar, warum 1:20 mit replace und ord. Macht's einen Unterschied ob 1,2 versus 2,1 in Zeilen? Im Grunde nicht!
+
+```{r}
+librarian::shelf(DescTools)
+rows <- CombSet(1:20, 2, repl = F, ord = F)
+cols <- CombSet(1:4, 2, repl = FALSE, ord = F)
+draw <- expand.grid(1:nrow(rows), 1:nrow(cols))
+ind <- cbind(rows[draw[,1],], cols[draw[,2],])
+```
+
+```{r}
+
+# x numeric vector of length 4
+calc_criterion <- function(x) {
+  crit <- (x[1]-x[2]) * (x[3] - x[4])
+  crit >= 0 
+}
+
+crit <- NULL
+for (i in seq(nrow(ind))) {
+  ind_row <- ind[i, 1:2]
+  ind_col <- ind[i, 3:4]
+  v <- as.numeric(zys[ind_row, ind_col])
+  crit[i] <- calc_criterion(v)
+}
+nrow(ind) - sum(crit)
+nrow(ind)
+```
+
+Wenn man ohne zurücklegen zieht halbieren sich die Fehler und die Anzahl der Vergleiche, es kommt also auf das gleiche heraus.
+
+mir gefällt der Code nicht, schwer zu lesen, eine Verbesserung wäre vllt. erst die Diffs zu berechnen. kommt zumindest ohne Schleifen aus!
+
+```{r}
+index2mtrx <- function(i) {
+  i <- as.matrix(i)
+  m2 <- matrix(nrow = max(i[,1]), ncol = max(i[,2]))
+  m2[i[,1:2]] <- i[,3]
+  return(m2)
+}
+zyson_errors <- function(zys) {
+  rows <- CombSet(1:nrow(zys), 2, repl = F, ord = F)
+  cols <- CombSet(1:ncol(zys), 2, repl = F, ord = F)
+  # calculate all possible diffs of all items across all participant combinations
+  diffs <- zys[rows[,1],] - zys[rows[, 2],]  
+  # calculate criterion across all possible item combinations
+  diffs2 <- diffs[, cols[,1]] * diffs[, cols[,2]]
+  # must be an array??
+  cols <- cbind(cols, colSums(diffs2 < 0))
+  rows <- cbind(rows, rowSums(diffs2 < 0))
+  row_errors <- index2mtrx(rows)
+  #pivot_wider(as.data.frame(rows), names_from = V2, values_from = V3) 
+  col_errors <- index2mtrx(cols) 
+  #pivot_wider(as.data.frame(cols), names_from = V2, values_from = V3) 
+  return(list(diffs2, col_errors, row_errors))
+  #table(diffs2 < 0)
+}
+ze <- zyson_errors(zys)
+# for a single pair
+#zyson_errors(zys[,c(1, 4)])
+#pivot_wider(ze[[3]], names_from = V2, values_from = V3)  
+rowSums(ze[[3]], na.rm=T)
+rowSums(ze[[2]], na.rm=T)
+sum(rowSums(ze[[2]], na.rm=T))
+```
+
+Not really clear, how about just 2 items?
+```{r}
+
+get_errors_for_one_item_pair <- function(zys2) {
+  rows <- CombSet(1:nrow(zys2), 2, repl = F, ord = F)
+  diffs <- zys2[rows[,1],] - zys2[rows[,2],]
+  diffs2 <- diffs[,1]*diffs[,2]
+  return(sum(diffs2 < 0))
+}
+
+# make function out of this
+create_item_error_mtrx <- function() {
+  comps <- CombSet(1:ncol(zys), 2, repl = T, ord = T) 
+  dfs <- Map(function(x, y) zys[, c(x, y)], comps[,1], comps[,2])
+  res <- sapply(dfs, get_errors_for_one_item_pair)
+  matrix(res, nrow = sqrt(length(res)))
+}
+
+zyston3 <- function(zys3) {
+  cols <- CombSet(1:ncol(zys3), 2, repl = F, ord = F)
+  diffs2 <- diff(zys3[,cols[,1]]) * diff(zys3[,cols[,2]])
+  return(sum(diffs2 < 0))
+}
+
+get_errors_for_one_person <- function(zys, person_row) {
+  diffs <- sapply(1:nrow(zys), function(x) zyston3(zys[c(person_row, x),]))
+  return(sum(diffs))
+}
+
+get_errors_for_all_persons <- function(zys) {
+  sapply(1:nrow(zys), function(x) get_errors_for_one_person(zys, x))
+}
+get_errors_for_one_person(zys, 1)
+get_errors_for_all_persons(zys) # use this as test
+```
+
+
