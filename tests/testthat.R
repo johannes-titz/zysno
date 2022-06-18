@@ -1,4 +1,4 @@
 library(testthat)
-library(zyston)
+library(zysno)
 
-test_check("zyston")
+test_check("zysno")

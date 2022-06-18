@@ -135,4 +135,19 @@ get_errors_for_one_person(zys, 1)
 get_errors_for_all_persons(zys) # use this as test
 ```
 
+can we do it with matrices?
 
+```{r}
+library(zyston)
+n <- 20
+A <- matrix(rep(1, n^2), ncol = n)
+A <- matrix(rep(c(1, 0), times = c(363, 363 * 362)), ncol = 363)
+A <- matrix(rep(c(1, 0), times = c(20, 20*19)), ncol = 20)
+X <- zyston47
+#X <- as.matrix(laura_post)# diffs are superfast!!!
+Z <- t(t(A %*% X) - t(X))
+Zp <- Z < 0
+Zn <- Z > 0
+rowSums(Zp)
+rowSums(Zn)
+```

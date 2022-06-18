@@ -1,3 +1,5 @@
 ^zyston\.Rproj$
 ^\.Rproj\.user$
 ^data-raw$
+^reste\.R$
+^R/reste\.R$
