@@ -9,7 +9,7 @@ get_errors_for_one_item_pair <- function(item_pair) {
   n_cols <- ncol(item_pair)
   n_rows <- nrow(item_pair)
   diffs <- item_pair %x% rep(1, n_rows) - rep(1, n_rows) %x% item_pair
-  errors <- diffs[,1] * diffs[,2] < 0
+  errors <- diffs[, 1] * diffs[,2] < 0
   return(errors)
 }
 
@@ -63,7 +63,7 @@ get_expected_errors <- function(item_pair) {
 #' Main function of package zysno
 #'
 #' Performs analysis of unidimensionality based on the paper by Zysno
-#' 
+#'
 #' @param d dataset, rows are participants, columns are items
 #' @return list of different outputs
 #' @importFrom DescTools CombSet
@@ -92,7 +92,7 @@ zysnotize <- function(d, cl = 1) {
 
 
 #' find the border between items/categories
-#' 
+#'
 scale_items <- function(d) {
   d <- as.data.frame(d)
   colnames(d) <- 1:ncol(d)
@@ -124,7 +124,50 @@ find_error_cells <- function(item_scale) {
   indices$label <- paste(indices[,1], indices[,2])
   # filter out non-error cells
   filter <- indices$label %in% paste(row, col)
-  indices$value <-1
+  indices$value <- 1
   indices$value[filter] <- 0
   return(as.matrix(xtabs(value~Var1+Var2, data=indices)))
+}
+
+lv_errors_item_pair <- function(item_pair) {
+  error_cells <- find_error_cells(scale_items(item_pair)$label)
+  tbl <- table(item_pair[, 1], item_pair[, 2])
+  chi <- chisq.test(tbl)
+  exp_sum <- sum(chi$expected * error_cells)
+  act_sum <- sum(tbl * error_cells)
+  h <- 1 - act_sum / exp_sum
+  return(data.frame(act_sum, exp_sum, h))
+}
+
+#' tests are needed!
+loevenize <- function(d) {
+  # do not compare with itself
+  comps <- DescTools::CombSet(1:ncol(d), 2, repl = F, ord = T)
+  colnames(comps) <- c("row", "col")
+  dfs <- Map(function(x, y) d[, c(x, y)], comps[, 1], comps[, 2])
+  res <- pbapply::pblapply(dfs, lv_errors_item_pair)
+  res <- Reduce(rbind, res)
+  res <- cbind(comps, res)
+  error_matrix <- as.matrix(xtabs(act_sum ~ row+col, data = res))
+  expected_error_matrix <- as.matrix(xtabs(exp_sum ~ row+col, data = res))
+  h_matrix <- as.matrix(xtabs(h ~ row+col, data = res))
+  sum_errors <- sum(error_matrix) / 2
+  sum_expected_errors <- sum(expected_error_matrix) / 2
+  h <- 1 - sum_errors / sum_expected_errors
+  return(tibble::lst(error_matrix,
+                     expected_error_matrix,
+                     h_matrix,
+                     h,
+                     sum_errors,
+                     sum_expected_errors))
+}
+
+df_from_tbl <- function(tbl) {
+  d <- as.data.frame.table(tbl)#, base = as.character(seq(nrow(tbl))))
+  d$Var1 <- as.numeric(d$Var1)
+  d$Var2 <- as.numeric(d$Var2)
+  x <- rep(d$Var1, d$Freq)
+  y <- rep(d$Var2, d$Freq)
+  res <- cbind(x, y)
+  return(res)
 }

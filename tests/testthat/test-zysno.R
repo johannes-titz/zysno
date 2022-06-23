@@ -12,6 +12,17 @@ test_that("error cells are correct", {
   expect_equal(error_cells, calculated_error_cells, ignore_attr = TRUE)
 })
 
+# example van schuur page 78-79, testing homogenity, observed and expected
+# errors
+
+tbl <- matrix(c(149, 99, 33, 101, 395, 101, 18, 74, 140), nrow = 3)
+df <- df_from_tbl(tbl)
+schuur <- unlist(loevenize(df)[c("sum_errors", "sum_expected_errors", "h")])
+correct_values <- c(226, 388.24, 0.42)
+test_that("van schuur page 78-79", {
+ expect_equal(round(schuur, 2), correct_values, ignore_attr = TRUE)
+})
+
 # scale items
 correct_scale_labels <- paste(c(3, 1, 3, 2, 3, 2, 1, 3),
                               c(1, 1, 2, 1, 3, 2, 2, 4), sep = "_")
