@@ -2,6 +2,17 @@ person_errors <- c(
   1, 26, 3, 24, 4, 13, 7, 7, 11, 11, 9, 9, 9, 16, 16, 4, 4, 22, 0, 0
 )
 
+# error cells
+
+item_scale_schuur <- paste(c(1, 2, 1, 2), c(1, 1, 2, 2), sep = "_")
+error_cells <- matrix(c(0, 0, 1, 1, 0, 0, 1, 1, 0), nrow = 3)
+calculated_error_cells <- find_error_cells(item_scale_schuur)
+
+test_that("error cells are correct", {
+  expect_equal(error_cells, calculated_error_cells, ignore_attr = TRUE)
+})
+
+# scale items
 correct_scale_labels <- paste(c(3, 1, 3, 2, 3, 2, 1, 3),
                               c(1, 1, 2, 1, 3, 2, 2, 4), sep = "_")
 

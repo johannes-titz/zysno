@@ -109,3 +109,22 @@ scale_items <- function(d) {
   d3$rank <- seq(from = 1, length.out = nrow(d3), by = 2)
   return(d3)
 }
+
+#' of course only for item pair!
+find_error_cells <- function(item_scale) {
+  order <- as.numeric(substr(item_scale, 1, 1))
+  row <- cumsum(ifelse(order == 1, 1, 0))
+  col <- cumsum(ifelse(order == 2, 1, 0))
+  # always start at 0, 0
+  # but indices start at 1, 1
+  row <- c(0, row) + 1
+  col <- c(0, col) + 1
+  # all possible indices
+  indices <- expand.grid(min(row):max(row), min(col):max(col))
+  indices$label <- paste(indices[,1], indices[,2])
+  # filter out non-error cells
+  filter <- indices$label %in% paste(row, col)
+  indices$value <-1
+  indices$value[filter] <- 0
+  return(as.matrix(xtabs(value~Var1+Var2, data=indices)))
+}
