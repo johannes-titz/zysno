@@ -1,4 +1,15 @@
-person_errors <- c(1, 26, 3, 24, 4, 13, 7, 7, 11, 11, 9, 9, 9, 16, 16, 4, 4, 22, 0, 0)
+person_errors <- c(
+  1, 26, 3, 24, 4, 13, 7, 7, 11, 11, 9, 9, 9, 16, 16, 4, 4, 22, 0, 0
+)
+
+correct_scale_labels <- paste(c(3, 1, 3, 2, 3, 2, 1, 3),
+                              c(1, 1, 2, 1, 3, 2, 2, 4), sep = "_")
+
+item_scale <- scale_items(zysno47[, 1:3])
+
+test_that("scaling items works", {
+  expect_identical(correct_scale_labels, item_scale$label)
+})
 
 em <- zysnotize(zysno47)
 

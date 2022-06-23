@@ -68,11 +68,11 @@ get_expected_errors <- function(item_pair) {
 #' @return list of different outputs
 #' @importFrom DescTools CombSet
 #' @export
-zysnotize <- function(d) {
+zysnotize <- function(d, cl = 1) {
   comps <- DescTools::CombSet(1:ncol(d), 2, repl = T, ord = T)
   dfs <- Map(function(x, y) d[, c(x, y)], comps[, 1], comps[, 2])
-  errors <- unlist(pbapply::pblapply(dfs, errors_item_pair))
-  expected_errors <- pbapply::pbsapply(dfs, get_expected_errors)
+  errors <- unlist(pbapply::pblapply(dfs, errors_item_pair, cl = cl))
+  expected_errors <- pbapply::pbsapply(dfs, get_expected_errors, cl = cl)
   error_matrix <- matrix(errors, nrow = sqrt(length(errors))) / 2
   expected_error_matrix <- matrix(expected_errors,
                                   nrow = sqrt(length(expected_errors))) / 2
@@ -88,4 +88,24 @@ zysnotize <- function(d) {
                      scalability,
                      sum_errors,
                      sum_expected_errors))
+}
+
+
+#' find the border between items/categories
+#' 
+scale_items <- function(d) {
+  d <- as.data.frame(d)
+  colnames(d) <- 1:ncol(d)
+  d2 <- tidyr::pivot_longer(d, cols = 1:ncol(d))
+  # verbose, but probably not the fastest
+  d3 <- d2 %>%
+    dplyr::group_by(name, value) %>%
+    dplyr::summarize(sum = length(value)) %>%
+    dplyr::mutate(cumsum = cumsum(sum)) %>%
+    # highest value is not a border
+    dplyr::filter(cumsum < nrow(d)) %>%
+    dplyr::arrange(cumsum) %>%
+    dplyr::mutate(label = paste(name, value + 1, sep = "_"))
+  d3$rank <- seq(from = 1, length.out = nrow(d3), by = 2)
+  return(d3)
 }
