@@ -4,7 +4,7 @@
 \alias{zysnotize}
 \title{Main function of package zysno}
 \usage{
-zysnotize(d)
+zysnotize(d, cl = 1)
 }
 \arguments{
 \item{d}{dataset, rows are participants, columns are items}

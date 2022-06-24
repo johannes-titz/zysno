@@ -140,17 +140,18 @@ lv_errors_item_pair <- function(item_pair) {
 }
 
 #' tests are needed!
+#' @export
 loevenize <- function(d) {
   # do not compare with itself
-  comps <- DescTools::CombSet(1:ncol(d), 2, repl = F, ord = T)
+  comps <- DescTools::CombSet(1:ncol(d), 2, repl = FALSE, ord = TRUE)
   colnames(comps) <- c("row", "col")
   dfs <- Map(function(x, y) d[, c(x, y)], comps[, 1], comps[, 2])
   res <- pbapply::pblapply(dfs, lv_errors_item_pair)
   res <- Reduce(rbind, res)
   res <- cbind(comps, res)
-  error_matrix <- as.matrix(xtabs(act_sum ~ row+col, data = res))
-  expected_error_matrix <- as.matrix(xtabs(exp_sum ~ row+col, data = res))
-  h_matrix <- as.matrix(xtabs(h ~ row+col, data = res))
+  error_matrix <- as.matrix(xtabs(act_sum ~ row + col, data = res))
+  expected_error_matrix <- as.matrix(xtabs(exp_sum ~ row + col, data = res))
+  h_matrix <- as.matrix(xtabs(h ~ row + col, data = res))
   sum_errors <- sum(error_matrix) / 2
   sum_expected_errors <- sum(expected_error_matrix) / 2
   h <- 1 - sum_errors / sum_expected_errors
@@ -163,7 +164,7 @@ loevenize <- function(d) {
 }
 
 df_from_tbl <- function(tbl) {
-  d <- as.data.frame.table(tbl)#, base = as.character(seq(nrow(tbl))))
+  d <- as.data.frame.table(tbl)
   d$Var1 <- as.numeric(d$Var1)
   d$Var2 <- as.numeric(d$Var2)
   x <- rep(d$Var1, d$Freq)

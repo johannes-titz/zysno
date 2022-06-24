@@ -2,5 +2,6 @@
 
 export(errors_item_pair)
 export(get_expected_errors)
+export(loevenize)
 export(zysnotize)
 importFrom(DescTools,CombSet)

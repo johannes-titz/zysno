@@ -23,6 +23,13 @@ test_that("van schuur page 78-79", {
  expect_equal(round(schuur, 2), correct_values, ignore_attr = TRUE)
 })
 
+# todo: example p. 38
+tbl <- matrix(c(157, 185, 134, 724), nrow = 2)
+loev <- loevenize(df_from_tbl(tbl))
+expected <- c(208.1, 0.36)
+# loev$h == 0.36
+# loev$sum_expected_errors = 208.1
+
 # scale items
 correct_scale_labels <- paste(c(3, 1, 3, 2, 3, 2, 1, 3),
                               c(1, 1, 2, 1, 3, 2, 2, 4), sep = "_")
