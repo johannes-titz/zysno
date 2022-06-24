@@ -16,7 +16,7 @@ test_that("error cells are correct", {
 # errors
 
 tbl <- matrix(c(149, 99, 33, 101, 395, 101, 18, 74, 140), nrow = 3)
-df <- df_from_tbl(tbl)
+df <- tbl2data(tbl)
 schuur <- unlist(loevenize(df)[c("sum_errors", "sum_expected_errors", "h")])
 correct_values <- c(226, 388.24, 0.42)
 test_that("van schuur page 78-79", {
@@ -25,7 +25,7 @@ test_that("van schuur page 78-79", {
 
 # todo: example p. 38
 tbl <- matrix(c(157, 185, 134, 724), nrow = 2)
-loev <- loevenize(df_from_tbl(tbl))
+loev <- loevenize(tbl2data(tbl))
 expected <- c(208.1, 0.36)
 # loev$h == 0.36
 # loev$sum_expected_errors = 208.1

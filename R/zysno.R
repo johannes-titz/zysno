@@ -163,7 +163,14 @@ loevenize <- function(d) {
                      sum_expected_errors))
 }
 
-df_from_tbl <- function(tbl) {
+#' Generate data from cross table
+#'
+#' Useful when you do not have raw data but calculations must be performed
+#' on raw data.
+#'
+#' @param tbl Cross table of two variables
+#' @return data as matrix
+tbl2data <- function(tbl) {
   d <- as.data.frame.table(tbl)
   d$Var1 <- as.numeric(d$Var1)
   d$Var2 <- as.numeric(d$Var2)
