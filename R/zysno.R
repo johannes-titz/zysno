@@ -132,6 +132,7 @@ find_error_cells <- function(item_scale) {
 lv_errors_item_pair <- function(item_pair) {
   error_cells <- find_error_cells(scale_items(item_pair)$label)
   tbl <- table(item_pair[, 1], item_pair[, 2])
+  if (prod(dim(tbl)) < 4) return(data.frame(NA, NA, NA))
   chi <- chisq.test(tbl)
   exp_sum <- sum(chi$expected * error_cells)
   act_sum <- sum(tbl * error_cells)
