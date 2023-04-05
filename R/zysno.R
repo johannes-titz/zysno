@@ -1,4 +1,4 @@
-#' Calculate errors for one item pair (old version) 
+#' Calculate errors for one item pair (old version)
 #'
 #' Uses Kronecker product for generating combinations
 #' is relatively slow
@@ -19,6 +19,7 @@ get_errors_for_one_item_pair <- function(item_pair) {
 #' @return number of errors
 #' @export
 errors_item_pair <- function(item_pair) {
+  item_pair <- na.omit(item_pair)
   crosstab <- table(item_pair[, 1], item_pair[, 2])
   # must be at least a 2 x 2 table
   if (any(dim(crosstab) < 2)) return(0)
@@ -27,7 +28,7 @@ errors_item_pair <- function(item_pair) {
   # skip first column and last row
   for (i in 1:(nrow(crosstab) - 1)) {
     for (j in 2:ncol(crosstab)) {
-      errors <- errors + crosstab[i, j] * sum(crosstab[1:nrow(crosstab) > i, 1:ncol(crosstab) < j])
+      errors <- errors + as.numeric(crosstab[i, j]) * as.numeric(sum(crosstab[1:nrow(crosstab) > i, 1:ncol(crosstab) < j]))
     }
   }
   # we only make half of all possible comparisons
@@ -49,9 +50,10 @@ get_expected_errors_bt <- function(item_pair, bt_samples) {
 
 #' Calculate number of expected errors for one item pair
 #'
-#' @return number of expected errors 
+#' @return number of expected errors
 #' @export
 get_expected_errors <- function(item_pair) {
+  item_pair <- na.omit(item_pair)
   n_rows <- nrow(item_pair)
   fkj <- table(item_pair[, 1])
   fki <- table(item_pair[, 2])
@@ -130,6 +132,7 @@ find_error_cells <- function(item_scale) {
 }
 
 lv_errors_item_pair <- function(item_pair) {
+  item_pair <- na.omit(item_pair)
   error_cells <- find_error_cells(scale_items(item_pair)$label)
   tbl <- table(item_pair[, 1], item_pair[, 2])
   if (ncol(tbl) < 2 || nrow(tbl) < 2) {
